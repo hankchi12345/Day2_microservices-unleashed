@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  user_db:
+    image: mysql:8.0
+    container_name: user_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3306:3306"
+    volumes:
+      - userdb_data:/var/lib/mysql
+
+  dev01:
+    build: ./dev01
+    depends_on:
+      - user_db
+    environment:
+      DB_HOST: user_db
+      DB_USER: appuser
+      DB_PASS: apppass
+      DB_NAME: userdb
+
+  dev02:
+    build: ./dev02
+    depends_on:
+      - user_db
+    environment:
+      DB_HOST: user_db
+      DB_USER: appuser
+      DB_PASS: apppass
+      DB_NAME: userdb
+
+  dev03:
+    build: ./dev03
+    depends_on:
+      - user_db
+    environment:
+      DB_HOST: user_db
+      DB_USER: appuser
+      DB_PASS: apppass
+      DB_NAME: userdb
+
+volumes:
+  userdb_data:
