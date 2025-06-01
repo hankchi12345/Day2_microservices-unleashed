@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  user_db:
+    image: mysql:8.0
+    container_name: user_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: syncuser
+      MYSQL_PASSWORD: syncpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - userdb_data:/var/lib/mysql
+
+  dev01:
+    build: ./dev01
+    depends_on:
+      - dev01_db
+    environment:
+      DB_HOST: dev01_db
+      DB_USER: appuser
+      DB_PASS: apppass
+      DB_NAME: dev01db
+
+  dev01_db:
+    image: mysql:8.0
+    container_name: dev01_db #先做一個服務（dev01）確保同步流程跑通
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: dev01db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    volumes:
+      - dev01_data:/var/lib/mysql
+
+  sync_agent:
+    build: ./sync_agent
+    depends_on:
+      - user_db
+      - dev01_db
+    environment:
+      SRC_DB_HOST: user_db
+      SRC_DB_USER: syncuser
+      SRC_DB_PASS: syncpass
+      SRC_DB_NAME: userdb
+
+      DEST_DB_HOST: dev01_db
+      DEST_DB_USER: appuser
+      DEST_DB_PASS: apppass
+      DEST_DB_NAME: dev01db
+
+volumes:
+  userdb_data:
+  dev01_data:
