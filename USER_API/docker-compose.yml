@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  user_db:
+    image: mysql:8.0
+    container_name: user_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: useradmin
+      MYSQL_PASSWORD: userpass
+    volumes:
+      - userdb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  user_api:
+    build: ./user_api
+    depends_on:
+      - user_db
+    environment:
+      DB_HOST: user_db
+      DB_USER: useradmin
+      DB_PASS: userpass
+      DB_NAME: userdb
+    ports:
+      - "7000:7000"
+
+  dev01:
+    build: ./dev01
+    environment:
+      USER_API_HOST: user_api
+      USER_API_PORT: 7000
+
+volumes:
+  userdb_data:
